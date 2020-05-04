@@ -1,2 +1,2 @@
-# Articles
-Useful articles for the internship
+# Research internship
+Deep-learning pour la modélisation de systèmes dynamiques chaotiques
