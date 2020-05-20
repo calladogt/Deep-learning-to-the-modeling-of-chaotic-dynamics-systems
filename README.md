@@ -32,17 +32,17 @@ The number of degrees of freedom is the dimension of the vector space necessary 
 
 There are some ways to characterize chaos. Here, I will present three simple methods to see if the system is chaotic:
 
-1) Power Spectrum
+1) Power Spectrum:
 A simple way to characterize chaos consists in performing a Fourier
 spectrum of the temporal evolution of one variable of the system.
 The trajectories of a regular Hamiltonian system is the composition of oscillations each having a pulsation wi, i.e, its power spectrum is a soft spectrum with many harmonics peaks. In the case of a chaotic system, its spectrum is without well-defined frequency peaks but rather broad band noise.
 
-2) Sensitivity to initial conditions
+2) Sensitivity to initial conditions:
 A more straightforward way to demonstrate that a trajectory is chaotic, consists in measuring it degree of non-predictability. Two experiments starting from rigorously the same initial conditions, evolve with exactly the same trajectory5. But if the initial conditions are not rigorously alike, the distance separating them in phase space will evolve very differently if the trajectory is regular or chaotic:
 
 * For regular trajectories, the two systems with slightly different initial conditions will separate in phase space with a distance growing LINEARLY in time on average.
 
 * For chaotic trajectories, two systems arising from the two different initial conditions are well correlated at the beginning, but they quickly lead to strongly different leading to a complete loss of correlation after a few seconds. In this case, the distance between the two trajectories increases EXPONENTIALLY with time. However, this evolution is not homogeneous in time, but this is only true on average.
 
-3) Stochasticity criterion
+3) Stochasticity criterion:
 In some systems, we can also see the chaotic behavior with the stochasticity criterion. If a system, apparently regular, has two resonance points and their respective resonance trajectories around these points in the phase space, a possible chaotic movement happens, according to this criterion, when there is an overlapping between the two trajectories around their harmonics. An example of this is the Lorenz attractor. Depending on the parameters chosen for the equation, we have a chaotic behavior of the system in which the trajectories around the resonance points are overlapped and, thus, the system does not know exactly which resonance point it should follow and changes from one to the another chaotically.
