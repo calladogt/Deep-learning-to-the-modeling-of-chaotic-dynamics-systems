@@ -5,6 +5,8 @@ I will describe my research internship here. The research subject is "Deep learn
 
 For instance, I will separate 2 folders of files: articles and codes. In the article folder, I will put all articles that make sense to read and study about my research project. In codes, I will store all codes made during my internship.
 
+Let's study some interesting topics for the project.
+
 ### Chaotic systems
 
 Here I will do some revision about this subject. Let's see the conditions to have a chaotic system and how to characterize this kind of system.
