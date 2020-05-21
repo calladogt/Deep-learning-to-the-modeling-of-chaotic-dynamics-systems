@@ -44,5 +44,7 @@ A more straightforward way to demonstrate that a trajectory is chaotic, consists
 
 * For chaotic trajectories, two systems arising from the two different initial conditions are well correlated at the beginning, but they quickly lead to strongly different leading to a complete loss of correlation after a few seconds. In this case, the distance between the two trajectories increases EXPONENTIALLY with time. However, this evolution is not homogeneous in time, but this is only true on average.
 
+-> we can use the Lyapunov Exponents to mesure the rate of separation of the trajectories.
+
 3) Stochasticity criterion:
 In some systems, we can also see the chaotic behavior with the stochasticity criterion. If a system, apparently regular, has two resonance points and their respective resonance trajectories around these points in the phase space, a possible chaotic movement happens, according to this criterion, when there is an overlapping between the two trajectories around their harmonics. An example of this is the Lorenz attractor. Depending on the parameters chosen for the equation, we have a chaotic behavior of the system in which the trajectories around the resonance points are overlapped and, thus, the system does not know exactly which resonance point it should follow and changes from one to the another chaotically.
