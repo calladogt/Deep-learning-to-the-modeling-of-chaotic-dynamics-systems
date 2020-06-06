@@ -2,3 +2,5 @@
 Simulators/ks-simulator/position.dat
 Simulators/ks-simulator/state_history.dat
 Simulators/ks-simulator/time_counter.dat
+Simulators/ks-simulator/state_history_u2.dat
+*.dat
