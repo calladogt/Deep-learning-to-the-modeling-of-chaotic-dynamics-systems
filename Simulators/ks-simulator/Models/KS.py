@@ -1,0 +1,173 @@
+import numpy as np
+import matplotlib.pyplot as plt
+
+class KS:
+    """KS class
+
+    This code was provided by Alessandro Bucci. This is an
+    implementation of the Kuramoto-Sivashinsky's equation. This code
+    is in 1-dimension (x) and is developped across time. 
+    The domain is in 1-D and defined by : 
+    - L: the "physical" length of the domaine
+    - N: the number of sample points on this length. 
+    
+    At one moment, the data is an array of N points. 
+    The mapping is given by self.x 
+
+    This is was designed to simulate control in closed loop. 
+    - a_dim is the number of actuator 
+
+    The main method is advance: given the state of the KS and the
+    actions, it moves forward for one time step (defined by dt). 
+
+    Without any control, just give advance an action of zeros(N) with
+    a_dim=1 (one actuator with a null action).
+
+    """
+    def __init__(self,L=16,N=128,dt=0.5,a_dim=1):
+        """
+        Parameters
+        ----------
+        L    : the "physical" length of the domaine
+        N    : the number of sample points on this length
+        dt   : the time step
+        a_dim: the number of actuators
+        
+        """
+        self.L = L; 
+        self.n = N; 
+        self.dt = dt; 
+        self.x = np.arange(N)*L/N
+        self.k = N*np.fft.fftfreq(N)[0:N//2+1]*2*np.pi/L
+        self.ik    = 1j*self.k                   # spectral derivative operator
+        self.lin   = self.k**2 - self.k**4       # Fourier multipliers for linear term
+        self.a_dim = a_dim
+        self.B = np.zeros((self.x.size,self.a_dim))
+        sig = 0.4
+        x_zero = self.x[-1]/a_dim*np.arange(0,a_dim)
+        gaus = 1/(np.sqrt(2*np.pi)*sig)*np.exp(-0.5*((self.x-self.x[self.x.size//2])/sig)**2)
+        for i in range(0,a_dim):
+            self.B[:,i] = np.roll(gaus,int(np.floor(x_zero[i]-self.x[self.x.size//2])/(self.x[1]-self.x[0])))
+            self.B[:,i] = self.B[:,i]/max(self.B[:,i])
+            self.B[:,i] = np.roll(self.B[:,i],5)
+
+            
+    def nlterm(self,u,f):
+        # compute tendency from nonlinear term. advection + forcing
+        ur = np.fft.irfft(u,axis=-1)
+        return -0.5*self.ik*np.fft.rfft(ur**2,axis=-1)+f
+
+
+    def advance(self,u0,action):
+        """
+        The key method: make one time step developping  the KS system. 
+
+        Parameters
+        ----------
+        u      : the current state, np.array(N) with N the number of spatial points
+        action : one action per actuator
+
+        Returns
+        -------
+        u      : the next state, np.array(N) with N the number of spatial points
+
+        Note: 
+        ----- 
+        The state is stored in self.u (you can access it)
+
+        """
+        #forcing shape
+        self.f0 = np.zeros((self.x.size,1))
+        dum = np.zeros((self.x.size,self.a_dim))
+        
+        for i in range(0,action.size):
+            dum[:,i] = self.B[:,i]*action[i]
+        self.f0 = np.sum(dum, axis=1)
+        
+        # semi-implicit third-order runge kutta update.
+        # ref: http://journals.ametsoc.org/doi/pdf/10.1175/MWR3214.1
+        self.u = np.fft.rfft(u0,axis=-1)
+        self.f = np.fft.rfft(self.f0,axis=-1)
+        u_save = self.u.copy()
+        for n in range(3):
+            dt = self.dt/(3-n)
+            # explicit RK3 step for nonlinear term
+            self.u = u_save + dt*self.nlterm(self.u,self.f)
+            # implicit trapezoidal adjustment for linear term
+            self.u = (self.u+0.5*self.lin*dt*u_save)/(1.-0.5*self.lin*dt)
+        self.u = np.fft.irfft(self.u,axis=-1)
+        return self.u
+                
+    def unroll(self, u0, nTimeSteps=10, action=None):
+        """Unroll the simulation over many time steps. Basically, it is a for
+        loop around advance.
+
+        Parameters
+        ----------
+        u      : the starting state, np.array(N) with N the number of spatial points
+        action : one action per actuator
+        nTimeSteps: the number of time steps. The "real" time is nTimeSteps*self.dt
+
+        Returns
+        -------
+        U    : The np.matrix with the data. The output is of size (nTimeSteps+1), the init. state is included. 
+        taxis: The "real" time axis to plot
+        """
+        observation = np.array(u0) # for the copy
+        if action is None:
+            action = np.zeros(1)
+        U = np.matrix(u0) # We will stack in U at each time step
+        print("Running for : ",nTimeSteps)
+        taxis = 0 
+        for nt in range(nTimeSteps): 
+            observation = self.advance(observation,action)
+            U = np.vstack((U,observation))
+            taxis = np.hstack((taxis,(nt+1)*self.dt))
+        return (U,taxis)
+
+
+
+def drawKS(U_sim, x_axis, t_axis ,startT=0,endT=0, width = 10, divwidth = 4, filename=None): 
+    """Drawer method for data simulated by the KS simulator
+    Typical use : 
+    drawKS(U1, ks1.x, taxis,100,200,15,5)
+    Plot the simulation U1, generated by ks1 from sample 100 to 200. 
+    The figure has a width of 10 and a height of 15/5
+    If the filename is set to None (default), the figure is not saved and you can see it. 
+    """
+    if endT==0:
+        endT=U_sim.shape[0]
+    assert (startT < endT), "startT must be before endT"
+    assert (startT < U_sim.shape[0]), "startT is out of range"
+    assert (endT <= U_sim.shape[0]), "endT is out of range"
+    assert (U_sim.shape[0] == t_axis.shape[0]), "time dimension mismatch"
+    assert (U_sim.shape[1] == x_axis.shape[0]), "spatial dimension mismatch"
+    fig = plt.figure(figsize=(width, width/divwidth))
+    ax = fig.gca()
+    ola = ax.contourf( t_axis[startT:endT], x_axis, U_sim[startT:endT,:].T,  cmap=plt.cm.viridis)
+    cbar = plt.colorbar(ola)
+    if filename is not None:
+        plt.savefig(filename, format='pdf')
+    else: 
+        plt.show()
+
+
+
+def simpleTest():
+    dt = 1 # the time step 
+    L=20
+    N=64
+    ks = KS(L=L,N=N,dt=dt)
+    # create init. conditions
+    u0 = np.ones(N)*(-1)
+    u0[22:42] = 1
+    U , tax= ks.unroll(u0,1000)
+    drawKS(U,ks.x,tax,200,400)
+
+    
+    
+def main():
+    simpleTest()
+
+if __name__ == "__main__":
+    main()
